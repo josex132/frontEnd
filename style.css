@@ -1,0 +1,209 @@
+:root {
+    --primary-green: #8ca37e;
+    --light-green: #cedecd;
+    --header-bg: #b2c2a9;
+    --dark-green: #5a7d5a;
+    --accent-orange: #f8c291;
+    --search-bg: #c5bfa1;
+    --white: #ffffff;
+    --text-red: #e74c3c;
+}
+
+body { 
+    font-family: 'Quicksand', sans-serif; 
+    margin: 0; 
+    background: var(--white); 
+    color: #333; 
+}
+
+/* --- NAVEGACIÓN --- */
+nav { 
+    background: var(--header-bg); 
+    padding: 20px 40px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.nav-links {
+    display: flex;
+    gap: 10px;
+}
+
+/* Estilo para los botones/labels de navegación */
+.nav-links button, .nav-links label { 
+    background: transparent; 
+    border: none; 
+    padding: 12px 25px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    border-radius: 12px; 
+    font-size: 16px; 
+    transition: 0.3s;
+    display: inline-block;
+}
+
+/* Estado activo para la navegación sin scripts */
+#t-dash:checked ~ nav label[for="t-dash"],
+#t-inv:checked ~ nav label[for="t-inv"],
+#t-usr:checked ~ nav label[for="t-usr"] {
+    background: var(--dark-green);
+    color: white;
+}
+
+/* --- CONTENEDOR --- */
+.container { padding: 30px 60px; }
+
+/* --- GRID DE ESTADÍSTICAS --- */
+.stats-grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 25px; 
+    margin-bottom: 30px; 
+}
+
+.stat-card { 
+    background: var(--light-green); 
+    padding: 25px; 
+    border-radius: 18px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+}
+
+.stat-card h4 { margin: 0; color: var(--dark-green); font-size: 14px; }
+.stat-card strong { display: block; font-size: 28px; margin-top: 10px; }
+
+/* --- SECCIONES DE LISTADO (DASHBOARD) --- */
+.list-section {
+    background: var(--light-green);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: flex;          
+    flex-direction: column; 
+}
+
+.list-item { 
+    background: #e1ede0; 
+    margin: 10px 0; 
+    padding: 15px; 
+    border-radius: 15px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.list-item .info span { display: block; font-size: 12px; color: #666; }
+
+/* --- BOTONES Y TABLAS --- */
+.btn-action { 
+    padding: 12px 24px; 
+    border-radius: 15px; 
+    border: none; 
+    cursor: pointer; 
+    font-weight: bold; 
+    transition: 0.3s; 
+}
+
+.btn-add { background: var(--dark-green); color: white; }
+.btn-del { background: var(--text-red); color: white; }
+
+.btn-view-all {
+    background: var(--primary-green);
+    color: white;
+    width: 100%; 
+    margin-top: 15px;      
+    box-sizing: border-box; /* Evita que el botón se salga del cuadro verde */
+    display: block;        
+    text-align: center;
+    text-decoration: none;
+}
+
+table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+th { background: var(--accent-orange); padding: 15px; text-align: left; border-radius: 10px 10px 0 0; }
+td { background: var(--light-green); padding: 15px; border-bottom: 1px solid white; }
+
+/* --- MODALES --- */
+.modal-overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.5); display: none; 
+    justify-content: center; align-items: center; z-index: 2000; 
+}
+
+.modal-content { 
+    background: var(--white); border: 3px solid var(--primary-green); 
+    padding: 30px; border-radius: 25px; width: 400px; text-align: center; 
+}
+
+.modal-content input, .modal-content select { 
+    width: 100%; padding: 12px; margin: 8px 0; 
+    border-radius: 12px; border: none; background: var(--light-green); 
+    box-sizing: border-box;
+}
+
+/* --- RESPONSIVE (MÓVILES) --- */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .container { padding: 20px; }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas en tablets */
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr; /* 1 columna en celulares */
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-links label, .nav-links button {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+.tab-content { display: none; }
+        
+        #t-dash:checked ~ .container #dash,
+        #t-inv:checked ~ .container #inv,
+        #t-usr:checked ~ .container #usr { 
+            display: block; 
+        }
+
+        .nav-links label {
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        #t-dash:checked ~ nav label[for="t-dash"],
+        #t-inv:checked ~ nav label[for="t-inv"],
+        #t-usr:checked ~ nav label[for="t-usr"] {
+            background-color: #5f6d4d;
+            color: white;
+        }
+
+        .modal-overlay {
+            display: none;
+        }
+
+        #modal-product-toggle:checked ~ #modalProduct {
+            display: flex;
+        }
+
+        #modal-user-toggle:checked ~ #modalUser {
+            display: flex;
+        }
