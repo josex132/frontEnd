@@ -18,7 +18,7 @@
     <input type="checkbox" id="modal-product-toggle" style="display:none;">
     <input type="checkbox" id="modal-user-toggle" style="display:none;">
 
-    
+    <!-- MODAL PRODUCTO -->
     <div id="modalProduct" class="modal-overlay">
         <div class="modal-content">
             <h2 style="color: var(--dark-green)">Nuevo Producto</h2>
@@ -29,7 +29,7 @@
 
             <select>
                 <option>Fútbol</option>
-                <option>Running</option>
+                <option>Running</option>zp
                 <option>Tenis</option>
                 <option>Natación</option>
             </select>
@@ -72,7 +72,7 @@
 
     <div class="container">
 
-        
+        <!-- DASHBOARD COMPLETO RESTAURADO -->
         <div id="dash" class="tab-content">
             <h2>Dashboard</h2>
 
@@ -80,7 +80,7 @@
                 <div class="stat-card"><h4>Total Productos</h4><strong>198</strong><span>En 8 categorías</span></div>
                 <div class="stat-card"><h4>Valor Total</h4><strong>$13.803</strong><span>Inventario valorizado</span></div>
                 <div class="stat-card"><h4>Stock Bajo</h4><strong style="color:var(--text-red)">5</strong><span>Requieren atención</span></div>
-                <div class="stat-card"><h4>Artículos Únicos</h4><strong>12</strong><span>SKUs registrados</span></div>
+                <div class="stat-card"><h4>Artículos Únicos</h4><strong>7</strong><span>SKUs registrados</span></div>
             </div>
 
             <div class="list-section">
@@ -114,7 +114,7 @@
             </div>
         </div>
 
-        
+        <!-- INVENTARIO -->
         <div id="inv" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2>Inventario</h2>
@@ -131,7 +131,7 @@
             </table>
         </div>
 
-        
+        <!-- USUARIOS  -->
         <div id="usr" class="tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2>Gestión de Usuarios</h2>
@@ -141,29 +141,74 @@
             <table>
                 <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Acción</th></tr></thead>
                 <tbody>
-                    <tr><td>José Miguel Ardila</td><td>jose@mail.com</td><td>Admin</td><td>-</td></tr>
+                    <tr><td>José Miguel Ardila</td><td>jose@mail.com</td><td>Admin</td><td><button class="btn-del btn-action">Eliminar</button></td></tr>
                 </tbody>
             </table>
         </div>
 
-        
+        <!-- REDES SOCIALES RESTAURADAS -->
         <div style="background-color: #7d8c6a; color: white; padding: 30px; border-radius: 20px; margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <h3 style="margin: 0; font-size: 1.5rem;">Redes Sociales</h3>
+                 <a href="https://www.facebook.com/share/1Dm3gCLuyo/"
+                   target="_blank"
+                   style="display:flex;
+                   align-items:center;
+                   gap:12px;
+                   text-decoration:none;
+                   color:white;
+                   cursor:pointer !important;">
+
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg"
+                      width="35"
+                      style="cursor:pointer !important;">
+
+                    <span style="font-size:1.1rem; cursor:pointer !important;">
+                       José Miguel Ardila Rodriguez
+                    </span>
+
+                </a>
+
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="35">
-                    <span style="font-size: 1.1rem;">José Miguel Ardila Rodriguez</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="35">
-                    <span style="font-size: 1.1rem;">Josemiguel_13268</span>
+                    <a href="https://www.instagram.com/jse_michael?igsh=MW4xb3FnMnZ1emt4Ng=="
+                        target="_blank"
+                        style="display:flex;
+                        align-items:center;
+                        gap:12px;
+                        text-decoration:none;
+                        color:white;
+                        cursor:pointer !important;">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg"
+                          width="35"
+                          style="cursor:pointer !important;">
+                           <span style="font-size:1.1rem; cursor:pointer !important;">
+                           jse_michael
+                            </span>
+                    </a> 
                 </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 15px; text-align: right;">
                 <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
-                    <span style="font-size: 1.1rem;">Josemz.00rz@gmail.com</span>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="35">
+                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=Josemz.00rz@gmail.com"
+                      target="_blank"
+                      style="display:flex;
+                      align-items:center;
+                      gap:12px;
+                      justify-content:flex-end;
+                      text-decoration:none;
+                      color:white;
+                      cursor:pointer !important;">
+                      
+                        <span style="font-size:1.1rem; cursor:pointer !important;">
+                           Josemz.00rz@gmail.com
+                        </span>
+
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg"
+                            width="35"
+                            style="cursor:pointer !important;">
+                    </a>
+                    
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
                     <span style="font-size: 1.1rem;">3209304071</span>
@@ -174,6 +219,36 @@
         </div>
 
     </div>
+
+    <script>
+    // 1. Función para obtener productos de la API de Java
+    async function cargarProductos() {
+        try {
+            // Esta URL debe ser la que usas en IntelliJ (normalmente puerto 8080)
+            const respuesta = await fetch('http://localhost:8080/api/productos');
+            const productos = await respuesta.json();
+
+            const tabla = document.getElementById('tabla-inventario');
+            if(tabla) {
+                tabla.innerHTML = ""; // Limpiar tabla
+                productos.forEach(prod => {
+                    tabla.innerHTML += `
+                        <tr>
+                            <td>${prod.id}</td>
+                            <td>${prod.nombre}</td>
+                            <td>${prod.stock}</td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (error) {
+            console.error("No se pudo conectar con la API de Java:", error);
+        }
+    }
+
+    // Ejecutar la función cuando abra el dashboard
+    document.addEventListener("DOMContentLoaded", cargarProductos);
+</script>
 
 </body>
 </html>
