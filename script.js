@@ -241,9 +241,9 @@ function renderInventario() {
         }).join('');
 }
 
-// =============================================
+// ====
 // INVENTARIO - CREAR PRODUCTO
-// =============================================
+// =================
 async function crearProducto() {
     const nombre    = document.getElementById('np-nombre').value.trim();
     const marca     = document.getElementById('np-marca').value.trim();
@@ -252,9 +252,14 @@ async function crearProducto() {
     const categoria = document.getElementById('np-cat').value;
 
     if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
-        alert('Por favor completa todos los campos.');
-        return;
-    }
+    alert('Por favor completa todos los campos.');
+    return;
+}
+
+if (/^\d+$/.test(nombre)) {
+    alert('El nombre del producto no puede ser solo números. Escribe un nombre válido.');
+    return;
+}
 
     if (!modoOffline) {
         try {
@@ -306,9 +311,9 @@ function limpiarFormProducto() {
     document.getElementById('np-cat').selectedIndex = 0;
 }
 
-// =============================================
+// ====
 // INVENTARIO - EDITAR PRODUCTO
-// =============================================
+// =========
 function abrirEditarProducto(id) {
     const productos = obtenerProductos();
     const p = productos.find(x => x.id == id);
@@ -335,10 +340,15 @@ async function guardarProducto() {
     const stock     = parseInt(document.getElementById('ep-stock').value);
     const categoria = document.getElementById('ep-cat').value;
 
-    if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
-        alert('Por favor completa todos los campos.');
-        return;
-    }
+   if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
+    alert('Por favor completa todos los campos.');
+    return;
+}
+
+if (/^\d+$/.test(nombre)) {
+    alert('El nombre del producto no puede ser solo números. Escribe un nombre válido.');
+    return;
+}
 
     const id = editandoProductoId;
 
@@ -378,9 +388,9 @@ function actualizarProductoLocal(id, nombre, marca, precio, stock, categoria) {
     }
 }
 
-// =============================================
+// =====
 // INVENTARIO - ELIMINAR PRODUCTO
-// =============================================
+// ========
 async function eliminarProducto(id) {
     if (!confirm('¿Eliminar este producto?')) return;
 
@@ -405,9 +415,9 @@ function eliminarProductoLocal(id) {
     guardarProductosLocal(lista);
 }
 
-// =============================================
+// =======
 // USUARIOS - RENDER TABLA
-// =============================================
+// =====
 function renderUsuarios() {
     const usuarios = obtenerUsuarios();
     const tbody = document.getElementById('tabla-usuarios');
@@ -437,9 +447,9 @@ function renderUsuarios() {
         `).join('');
 }
 
-// =============================================
+// ==========
 // USUARIOS - CREAR
-// =============================================
+// ========
 async function crearUsuario() {
     const nombre = document.getElementById('nu-nombre').value.trim();
     const correo = document.getElementById('nu-correo').value.trim();
@@ -502,9 +512,9 @@ function limpiarFormUsuario() {
     document.getElementById('nu-rol').selectedIndex = 0;
 }
 
-// =============================================
+// ======
 // USUARIOS - EDITAR
-// =============================================
+// ==============
 function abrirEditarUsuario(id) {
     const usuarios = obtenerUsuarios();
     const u = usuarios.find(x => x.id == id);
@@ -567,9 +577,9 @@ function actualizarUsuarioLocal(id, nombre, correo, edad, rol) {
     }
 }
 
-// =============================================
+// ===
 // USUARIOS - ELIMINAR
-// =============================================
+// ======
 async function eliminarUsuario(id) {
     if (!confirm('¿Eliminar este usuario?')) return;
 
