@@ -7,248 +7,237 @@
     <title>SportStock - Panel de Control</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .tab-content { display: none; }
+        #t-dash:checked ~ .container #dash,
+        #t-inv:checked  ~ .container #inv,
+        #t-usr:checked  ~ .container #usr { display: block; }
 
+        #t-dash:checked ~ nav label[for="t-dash"],
+        #t-inv:checked  ~ nav label[for="t-inv"],
+        #t-usr:checked  ~ nav label[for="t-usr"] {
+            background-color: #5f6d4d;
+            color: white;
+        }
+
+        .modal-overlay { display: none; }
+        #modal-product-toggle:checked ~ #modalProduct { display: flex; }
+        #modal-user-toggle:checked   ~ #modalUser    { display: flex; }
+
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-content {
+            background: white; border: 3px solid var(--primary-green);
+            padding: 30px; border-radius: 25px; width: 400px; text-align: center;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%; padding: 12px; margin: 8px 0;
+            border-radius: 12px; border: none; background: var(--light-green);
+            box-sizing: border-box; font-family: 'Quicksand', sans-serif;
+        }
+        .edit-btn { background: var(--dark-green); color: white; }
+
+        .modal-js {
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center; z-index: 3000;
+        }
+        .modal-js.abierto { display: flex; }
+
+        /* Banner de modo offline */
+        #api-banner {
+            display: none;
+            background: #fff3cd; color: #856404;
+            border: 1px solid #ffc107;
+            padding: 8px 16px; border-radius: 10px;
+            margin: 10px 20px; font-size: 0.85rem;
+            text-align: center;
+        }
+        #api-banner.show { display: block; }
+        #api-banner.conectado { background: #d4edda; color: #155724; border-color: #28a745; }
+    </style>
 </head>
 <body>
 
-    <input type="radio" name="sections" id="t-dash" checked style="display:none;">
-    <input type="radio" name="sections" id="t-inv" style="display:none;">
-    <input type="radio" name="sections" id="t-usr" style="display:none;">
+<input type="radio" name="sections" id="t-dash" checked style="display:none;">
+<input type="radio" name="sections" id="t-inv"  style="display:none;">
+<input type="radio" name="sections" id="t-usr"  style="display:none;">
+<input type="checkbox" id="modal-product-toggle" style="display:none;">
+<input type="checkbox" id="modal-user-toggle"    style="display:none;">
 
-    <input type="checkbox" id="modal-product-toggle" style="display:none;">
-    <input type="checkbox" id="modal-user-toggle" style="display:none;">
+<!-- MODAL NUEVO PRODUCTO -->
+<div id="modalProduct" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="color:var(--dark-green)">Nuevo Producto</h2>
+        <input id="np-nombre"  type="text"   placeholder="Nombre del producto">
+        <input id="np-marca"   type="text"   placeholder="Marca (Nike, Adidas…)">
+        <input id="np-precio"  type="number" placeholder="Precio ($)" min="0" step="0.01">
+        <input id="np-stock"   type="number" placeholder="Cantidad" min="0">
+        <select id="np-cat">
+            <option>Fútbol</option><option>Running</option>
+            <option>Tenis</option><option>Natación</option>
+            <option>Ciclismo</option><option>Boxeo</option>
+        </select>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+            <button class="btn-action btn-add" style="flex:1" onclick="crearProducto()">Guardar</button>
+            <label  for="modal-product-toggle" class="btn-action btn-del" style="flex:1;cursor:pointer;">Cancelar</label>
+        </div>
+    </div>
+</div>
 
-    <!-- MODAL PRODUCTO -->
-    <div id="modalProduct" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color: var(--dark-green)">Nuevo Producto</h2>
-            <input type="text" placeholder="Nombre del producto">
-            <input type="text" placeholder="Marca (Nike, Adidas, etc.)">
-            <input type="number" placeholder="Precio ($)">
-            <input type="number" placeholder="Cantidad">
+<!-- MODAL NUEVO USUARIO -->
+<div id="modalUser" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="color:var(--dark-green)">Registrar Usuario</h2>
+        <input id="nu-nombre" type="text"   placeholder="Nombre completo">
+        <input id="nu-correo" type="email"  placeholder="usuario@ejemplo.com">
+        <input id="nu-edad"   type="number" placeholder="Edad" min="1" max="120">
+        <select id="nu-rol">
+            <option>Empleado</option><option>Administrador</option>
+        </select>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+            <button class="btn-action btn-add" style="flex:1" onclick="crearUsuario()">Registrar</button>
+            <label  for="modal-user-toggle" class="btn-action btn-del" style="flex:1;cursor:pointer;">Cancelar</label>
+        </div>
+    </div>
+</div>
 
-            <select>
-                <option>Fútbol</option>
-                <option>Running</option>zp
-                <option>Tenis</option>
-                <option>Natación</option>
-            </select>
+<!-- MODAL EDITAR PRODUCTO -->
+<div id="modal-edit-prod" class="modal-js">
+    <div class="modal-content">
+        <h2 style="color:var(--dark-green)">Editar Producto</h2>
+        <input id="ep-nombre" type="text"   placeholder="Nombre">
+        <input id="ep-marca"  type="text"   placeholder="Marca">
+        <input id="ep-precio" type="number" placeholder="Precio ($)" min="0" step="0.01">
+        <input id="ep-stock"  type="number" placeholder="Stock" min="0">
+        <select id="ep-cat">
+            <option>Fútbol</option><option>Running</option>
+            <option>Tenis</option><option>Natación</option>
+            <option>Ciclismo</option><option>Boxeo</option>
+        </select>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+            <button class="btn-action btn-add" style="flex:1" onclick="guardarProducto()">Guardar</button>
+            <button class="btn-action btn-del" style="flex:1" onclick="cerrarModal('modal-edit-prod')">Cancelar</button>
+        </div>
+    </div>
+</div>
 
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn-action btn-add" style="flex:1">Guardar</button>
-                <label for="modal-product-toggle" class="btn-action btn-del" style="flex:1">Cancelar</label>
-            </div>
+<!-- MODAL EDITAR USUARIO -->
+<div id="modal-edit-usr" class="modal-js">
+    <div class="modal-content">
+        <h2 style="color:var(--dark-green)">Editar Usuario</h2>
+        <input id="eu-nombre" type="text"   placeholder="Nombre completo">
+        <input id="eu-correo" type="email"  placeholder="correo@ejemplo.com">
+        <input id="eu-edad"   type="number" placeholder="Edad" min="1" max="120">
+        <select id="eu-rol">
+            <option>Empleado</option><option>Administrador</option>
+        </select>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+            <button class="btn-action btn-add" style="flex:1" onclick="guardarUsuario()">Guardar</button>
+            <button class="btn-action btn-del" style="flex:1" onclick="cerrarModal('modal-edit-usr')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- NAV -->
+<nav>
+    <div><strong>SportStock</strong><br><small>Sistema de Inventario Deportivo</small></div>
+    <div class="nav-links">
+        <label for="t-dash" onclick="renderDashboard()">Dashboard</label>
+        <label for="t-inv"  onclick="renderInventario()">Inventario</label>
+        <label for="t-usr"  onclick="renderUsuarios()">Usuarios</label>
+    </div>
+    <a href="index.html" class="btn-action btn-del" style="text-decoration:none;">Cerrar sesión</a>
+</nav>
+
+<!-- Banner de estado de API -->
+<div id="api-banner"></div>
+
+<div class="container">
+
+    <!-- DASHBOARD -->
+    <div id="dash" class="tab-content">
+        <h2>Dashboard</h2>
+        <div class="stats-grid">
+            <div class="stat-card"><h4>Total Productos</h4><strong id="st-prod">0</strong><span>Registrados</span></div>
+            <div class="stat-card"><h4>Valor Total</h4><strong id="st-valor">$0</strong><span>Inventario valorizado</span></div>
+            <div class="stat-card"><h4>Stock Bajo</h4><strong id="st-bajo" style="color:var(--text-red)">0</strong><span>Menos de 10 unidades</span></div>
+            <div class="stat-card"><h4>Usuarios</h4><strong id="st-usr">0</strong><span>Registrados</span></div>
+        </div>
+
+        <div class="list-section">
+            <h3> Alertas de Stock Bajo</h3>
+            <div id="dash-alertas"></div>
+            <label for="t-inv" class="btn-action btn-view-all"
+                   style="display:block;text-align:center;margin-top:10px;"
+                   onclick="renderInventario()">Ver inventario completo</label>
+        </div>
+
+        <div class="list-section">
+            <h3>📦 Últimos Productos Agregados</h3>
+            <div id="dash-ultimos"></div>
         </div>
     </div>
 
-    <!-- MODAL USUARIO -->
-    <div id="modalUser" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color: var(--dark-green)">Registrar Usuario</h2>
-            <input type="text" placeholder="Nombre completo">
-            <input type="email" placeholder="usuario@ejemplo.com">
+    <!-- INVENTARIO -->
+    <div id="inv" class="tab-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2>Inventario</h2>
+            <label for="modal-product-toggle" class="btn-action btn-add">+ Agregar producto</label>
+        </div>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Producto</th><th>Marca</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tabla-inventario"></tbody>
+        </table>
+    </div>
 
-            <select>
-                <option>Empleado</option>
-                <option>Administrador</option>
-            </select>
+    <!-- USUARIOS -->
+    <div id="usr" class="tab-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2>Gestión de Usuarios</h2>
+            <label for="modal-user-toggle" class="btn-action btn-add">+ Agregar usuario</label>
+        </div>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Edad</th><th>Rol</th><th>Estado</th><th>Fecha Registro</th><th>Último Login</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tabla-usuarios"></tbody>
+        </table>
+    </div>
 
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn-action btn-add" style="flex:1">Registrar</button>
-                <label for="modal-user-toggle" class="btn-action btn-del" style="flex:1">Cancelar</label>
+    <!-- PIE -->
+    <div style="background:#7d8c6a;color:white;padding:30px;border-radius:20px;margin-top:50px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div style="display:flex;flex-direction:column;gap:15px;">
+            <h3 style="margin:0;font-size:1.5rem;">Redes Sociales</h3>
+            <a href="https://www.facebook.com/share/1Dm3gCLuyo/" target="_blank" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:white;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="35">
+                <span>José Miguel Ardila Rodriguez</span>
+            </a>
+            <a href="https://www.instagram.com/jse_michael" target="_blank" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:white;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="35">
+                <span>jse_michael</span>
+            </a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:15px;text-align:right;">
+            <a href="https://mail.google.com/mail/?view=cm&to=Josemz.00rz@gmail.com" target="_blank" style="display:flex;align-items:center;gap:12px;justify-content:flex-end;text-decoration:none;color:white;">
+                <span>Josemz.00rz@gmail.com</span>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="35">
+            </a>
+            <div style="display:flex;align-items:center;gap:12px;justify-content:flex-end;">
+                <span>3209304071</span>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="35">
             </div>
+            <p style="margin:10px 0 0;font-weight:bold;">Creador: José Miguel Ardila Rodriguez</p>
         </div>
     </div>
 
-    <nav>
-        <div><strong>SportStock</strong><br><small>Sistema de Inventario Deportivo</small></div>
-        <div class="nav-links">
-            <label for="t-dash">Dashboard</label>
-            <label for="t-inv">Inventario</label>
-            <label for="t-usr">Usuarios</label>
-        </div>
-        <a href="index.html" class="btn-action btn-del" style="text-decoration:none; display:inline-block;">cerrar sesión</a>
-    </nav>
+</div>
 
-    <div class="container">
-
-        <!-- DASHBOARD COMPLETO RESTAURADO -->
-        <div id="dash" class="tab-content">
-            <h2>Dashboard</h2>
-
-            <div class="stats-grid">
-                <div class="stat-card"><h4>Total Productos</h4><strong>198</strong><span>En 8 categorías</span></div>
-                <div class="stat-card"><h4>Valor Total</h4><strong>$13.803</strong><span>Inventario valorizado</span></div>
-                <div class="stat-card"><h4>Stock Bajo</h4><strong style="color:var(--text-red)">5</strong><span>Requieren atención</span></div>
-                <div class="stat-card"><h4>Artículos Únicos</h4><strong>7</strong><span>SKUs registrados</span></div>
-            </div>
-
-            <div class="list-section">
-                <h3>Alertas de Stock Bajo</h3>
-                <div class="list-item">
-                    <div class="info"><strong>Zapatillas Running Pro</strong><span>Running</span></div>
-                    <div style="color: var(--text-red); font-weight:bold;">8 uds. <small>Min: 15</small></div>
-                </div>
-                <div class="list-item">
-                    <div class="info"><strong>Gafas de Natación Anti-fog</strong><span>Natación</span></div>
-                    <div style="color: var(--text-red); font-weight:bold;">5 uds. <small>Min: 20</small></div>
-                </div>
-                <div class="list-item">
-                    <div class="info"><strong>Bicicleta de Montaña 29\"</strong><span>Ciclismo</span></div>
-                    <div style="color: var(--text-red); font-weight:bold;">3 uds. <small>Min: 10</small></div>
-                </div>
-                <label for="t-inv" class="btn-action btn-view-all" style="text-align:center; display:block;">ver todos</label>
-            </div>
-
-            <div class="list-section">
-                <h3>Actividad Reciente</h3>
-                <div class="list-item">
-                    <div class="info"><strong>Balón de Fútbol Profesional</strong><span>Nike • Fútbol</span></div>
-                    <div><strong>$29.99</strong> <small>Stock: 45</small></div>
-                </div>
-                <div class="list-item">
-                    <div class="info"><strong>Raqueta de Tenis Carbon</strong><span>Wilson • Tenis</span></div>
-                    <div><strong>$149.99</strong> <small>Stock: 23</small></div>
-                </div>
-                <label for="t-inv" class="btn-action btn-view-all" style="text-align:center; display:block;">ver inventario</label>
-            </div>
-        </div>
-
-        <!-- INVENTARIO -->
-        <div id="inv" class="tab-content">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Inventario</h2>
-                <label for="modal-product-toggle" class="btn-action btn-add">+ agrega producto</label>
-            </div>
-
-            <table>
-                <thead>
-                    <tr><th>Producto</th><th>Marca</th><th>Precio</th><th>Stock</th><th>Acción</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Balón de Fútbol</td><td>Nike</td><td>$29.99</td><td>45</td><td><button class="btn-del btn-action">Eliminar</button></td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- USUARIOS  -->
-        <div id="usr" class="tab-content">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Gestión de Usuarios</h2>
-                <label for="modal-user-toggle" class="btn-action btn-add">+ agrega usuario</label>
-            </div>
-
-            <table>
-                <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Acción</th></tr></thead>
-                <tbody>
-                    <tr><td>José Miguel Ardila</td><td>jose@mail.com</td><td>Admin</td><td><button class="btn-del btn-action">Eliminar</button></td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- REDES SOCIALES RESTAURADAS -->
-        <div style="background-color: #7d8c6a; color: white; padding: 30px; border-radius: 20px; margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <h3 style="margin: 0; font-size: 1.5rem;">Redes Sociales</h3>
-                 <a href="https://www.facebook.com/share/1Dm3gCLuyo/"
-                   target="_blank"
-                   style="display:flex;
-                   align-items:center;
-                   gap:12px;
-                   text-decoration:none;
-                   color:white;
-                   cursor:pointer !important;">
-
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg"
-                      width="35"
-                      style="cursor:pointer !important;">
-
-                    <span style="font-size:1.1rem; cursor:pointer !important;">
-                       José Miguel Ardila Rodriguez
-                    </span>
-
-                </a>
-
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <a href="https://www.instagram.com/jse_michael?igsh=MW4xb3FnMnZ1emt4Ng=="
-                        target="_blank"
-                        style="display:flex;
-                        align-items:center;
-                        gap:12px;
-                        text-decoration:none;
-                        color:white;
-                        cursor:pointer !important;">
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg"
-                          width="35"
-                          style="cursor:pointer !important;">
-                           <span style="font-size:1.1rem; cursor:pointer !important;">
-                           jse_michael
-                            </span>
-                    </a> 
-                </div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 15px; text-align: right;">
-                <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
-                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=Josemz.00rz@gmail.com"
-                      target="_blank"
-                      style="display:flex;
-                      align-items:center;
-                      gap:12px;
-                      justify-content:flex-end;
-                      text-decoration:none;
-                      color:white;
-                      cursor:pointer !important;">
-                      
-                        <span style="font-size:1.1rem; cursor:pointer !important;">
-                           Josemz.00rz@gmail.com
-                        </span>
-
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg"
-                            width="35"
-                            style="cursor:pointer !important;">
-                    </a>
-                    
-                </div>
-                <div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">
-                    <span style="font-size: 1.1rem;">3209304071</span>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="35">
-                </div>
-                <p style="margin: 10px 0 0 0; font-weight: bold; font-size: 1.1rem;">Creador de la pagina: José Miguel Ardila Rodriguez</p>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-    // 1. Función para obtener productos de la API de Java
-    async function cargarProductos() {
-        try {
-            // Esta URL debe ser la que usas en IntelliJ (normalmente puerto 8080)
-            const respuesta = await fetch('http://localhost:8080/api/productos');
-            const productos = await respuesta.json();
-
-            const tabla = document.getElementById('tabla-inventario');
-            if(tabla) {
-                tabla.innerHTML = ""; // Limpiar tabla
-                productos.forEach(prod => {
-                    tabla.innerHTML += `
-                        <tr>
-                            <td>${prod.id}</td>
-                            <td>${prod.nombre}</td>
-                            <td>${prod.stock}</td>
-                        </tr>
-                    `;
-                });
-            }
-        } catch (error) {
-            console.error("No se pudo conectar con la API de Java:", error);
-        }
-    }
-
-    // Ejecutar la función cuando abra el dashboard
-    document.addEventListener("DOMContentLoaded", cargarProductos);
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>

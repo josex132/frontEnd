@@ -5,144 +5,235 @@
     <link rel="icon" href="logo.jpg" type="image/jpeg">
     <meta charset="UTF-8">
     <title>SportStock</title>
-
     <link rel="stylesheet" href="style.css">
-
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:Quicksand;">
 
-    <img src="logo.jpg" alt="Logo"
-    style="width:120px; margin-bottom:10px;">
-
+    <img src="logo.jpg" alt="Logo" style="width:120px; margin-bottom:10px;">
     <h1>SportStock</h1>
-
     <p style="color: var(--dark-green); font-weight:bold; margin-bottom:20px;">
         Sistema de Gestión de Inventario Deportivo
     </p>
+
+    <!-- Mensaje de error/éxito -->
+    <div id="mensaje" style="display:none; padding:10px 20px; border-radius:10px; margin-bottom:15px; font-weight:bold; text-align:center; width:350px; box-sizing:border-box;"></div>
 
     <!-- CONTENEDOR -->
     <div style="border:2px solid var(--primary-green); padding:40px; border-radius:30px; width:350px;">
 
         <h2>Bienvenido</h2>
+        <p style="color:#999;">Ingrese su cuenta o regístrese para comenzar</p>
 
-        <p style="color:#999;">
-            Ingrese su cuenta o regístrese para comenzar
-        </p>
-
-        <!-- BOTONES -->
+        <!-- BOTONES TAB -->
         <div style="display:flex; background:#dce8d7; border-radius:20px; padding:5px; margin-bottom:25px;">
-
-            <button onclick="mostrarLogin()"
-            id="btnLogin"
-            style="flex:1; padding:10px; border:none; border-radius:20px; background:white; font-weight:bold; cursor:pointer;">
+            <button onclick="mostrarLogin()" id="btnLogin"
+                style="flex:1; padding:10px; border:none; border-radius:20px; background:white; font-weight:bold; cursor:pointer;">
                 Iniciar Sesión
             </button>
-
-            <button onclick="mostrarRegistro()"
-            id="btnRegistro"
-            style="flex:1; padding:10px; border:none; border-radius:20px; background:transparent; font-weight:bold; cursor:pointer;">
+            <button onclick="mostrarRegistro()" id="btnRegistro"
+                style="flex:1; padding:10px; border:none; border-radius:20px; background:transparent; font-weight:bold; cursor:pointer;">
                 Registrarse
             </button>
-
         </div>
 
         <!-- LOGIN -->
-        <form id="loginForm" action="dashboard.html">
+        <div id="loginForm">
+            <label style="font-weight:bold; color:var(--dark-green);">Correo electrónico</label>
+            <input id="login-correo" type="email" placeholder="Usuario@gmail.com"
+                style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:20px; box-sizing:border-box;">
 
-            <label style="font-weight:bold; color:var(--dark-green);">
-                Correo electrónico
-            </label>
+            <label style="font-weight:bold; color:var(--dark-green);">Contraseña</label>
+            <input id="login-password" type="password" placeholder="********"
+                style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:25px; box-sizing:border-box;">
 
-            <input type="email"
-            placeholder="Usuario@gmail.com"
-            required
-            pattern=".+@gmail\.com"
-            title="Debe ingresar un correo Gmail válido"
-            style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:20px; box-sizing:border-box;">
-
-            <label style="font-weight:bold; color:var(--dark-green);">
-                Contraseña
-            </label>
-
-            <input type="password"
-            placeholder="********"
-            required
-            minlength="7"
-            maxlength="12"
-            title="La contraseña debe tener entre 7 y 12 caracteres"
-            style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:25px; box-sizing:border-box;">
-
-            <button type="submit"
-            style="width:100%; padding:15px; border:none; border-radius:15px; background:var(--primary-green); color:black; font-size:18px; cursor:pointer;">
+            <button onclick="iniciarSesion()"
+                style="width:100%; padding:15px; border:none; border-radius:15px; background:var(--primary-green); color:black; font-size:18px; cursor:pointer; font-family:Quicksand;">
                 Iniciar Sesión
             </button>
-
-        </form>
+        </div>
 
         <!-- REGISTRO -->
-       <form id="registroForm" action="dashboard.html" style="display:none;">
+        <div id="registroForm" style="display:none;">
+            <label style="font-weight:bold; color:var(--dark-green);">Nombre completo</label>
+            <input id="reg-nombre" type="text" placeholder="Ingrese su nombre"
+                style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:20px; box-sizing:border-box;">
 
-            <label style="font-weight:bold; color:var(--dark-green);">
-                Nombre completo
-            </label>
+            <label style="font-weight:bold; color:var(--dark-green);">Correo electrónico</label>
+            <input id="reg-correo" type="email" placeholder="Usuario@gmail.com"
+                style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:20px; box-sizing:border-box;">
 
-            <input type="text"
-            placeholder="Ingrese su nombre"
-            required
-            style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:20px; box-sizing:border-box;">
+            <label style="font-weight:bold; color:var(--dark-green);">Contraseña</label>
+            <input id="reg-password" type="password" placeholder="********" minlength="7" maxlength="12"
+                style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:25px; box-sizing:border-box;">
 
-            <label style="font-weight:bold; color:var(--dark-green);">
-                Correo electrónico
-            </label>
-
-            <input type="email"
-            placeholder="Usuario@gmail.com"
-            required
-            pattern=".+@gmail\.com"
-            title="Debe ingresar un correo Gmail válido"
-            style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:20px; box-sizing:border-box;">
-            <label style="font-weight:bold; color:var(--dark-green);">
-                Contraseña
-            </label>
-
-            <input type="password"
-            placeholder="********"
-            required
-            minlength="7"
-            maxlength="12"
-            title="La contraseña debe tener entre 7 y 12 caracteres"
-            style="width:100%; padding:12px; border:none; border-radius:10px; background:var(--light-green); margin-top:10px; margin-bottom:25px; box-sizing:border-box;">
-            <button type="submit"
-            style="width:100%; padding:15px; border:none; border-radius:15px; background:var(--primary-green); color:black; font-size:18px; cursor:pointer;">
+            <button onclick="registrarse()"
+                style="width:100%; padding:15px; border:none; border-radius:15px; background:var(--primary-green); color:black; font-size:18px; cursor:pointer; font-family:Quicksand;">
                 Registrarse
             </button>
-
-        </form>
+        </div>
 
     </div>
 
     <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        function mostrarMensaje(texto, tipo) {
+            const el = document.getElementById('mensaje');
+            el.textContent = texto;
+            el.style.display = 'block';
+            el.style.background = tipo === 'error' ? '#f8d7da' : '#d4edda';
+            el.style.color    = tipo === 'error' ? '#721c24'  : '#155724';
+            el.style.border   = tipo === 'error' ? '1px solid #f5c6cb' : '1px solid #c3e6cb';
+        }
 
         function mostrarRegistro() {
-
             document.getElementById("loginForm").style.display = "none";
             document.getElementById("registroForm").style.display = "block";
-
             document.getElementById("btnRegistro").style.background = "white";
             document.getElementById("btnLogin").style.background = "transparent";
+            document.getElementById('mensaje').style.display = 'none';
         }
 
         function mostrarLogin() {
-
             document.getElementById("loginForm").style.display = "block";
             document.getElementById("registroForm").style.display = "none";
-
             document.getElementById("btnLogin").style.background = "white";
             document.getElementById("btnRegistro").style.background = "transparent";
+            document.getElementById('mensaje').style.display = 'none';
         }
 
+        // ─── REGISTRARSE ───────────────────────────────────────────────
+        async function registrarse() {
+            const nombre   = document.getElementById('reg-nombre').value.trim();
+            const correo   = document.getElementById('reg-correo').value.trim();
+            const password = document.getElementById('reg-password').value;
+
+            if (!nombre || !correo || !password) {
+                mostrarMensaje('Por favor completa todos los campos.', 'error');
+                return;
+            }
+            if (!correo.endsWith('@gmail.com')) {
+                mostrarMensaje('El correo debe ser una cuenta Gmail.', 'error');
+                return;
+            }
+            if (password.length < 7 || password.length > 12) {
+                mostrarMensaje('La contraseña debe tener entre 7 y 12 caracteres.', 'error');
+                return;
+            }
+
+            const nuevoUsuario = {
+    nombre:   nombre,
+    email:    correo,
+    password: password,
+    rol:      'Empleado',
+    activo:   true
+};
+
+            try {
+                // Intenta registrar en la API
+                const res = await fetch(API_BASE + '/usuarios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoUsuario)
+                });
+
+                if (!res.ok) throw new Error('API error');
+
+                const creado = await res.json();
+                // Guarda sesión con los datos que devolvió la API
+                sessionStorage.setItem('usuarioLogueado', JSON.stringify({
+                    id:     creado.id,
+                    nombre: creado.nombre,
+                    correo: creado.correo,
+                    rol:    creado.rol
+                }));
+
+            } catch (e) {
+                // Si la API no está, guarda localmente de todas formas
+                sessionStorage.setItem('usuarioLogueado', JSON.stringify({
+                    id:     Date.now(),
+                    nombre,
+                    correo,
+                    rol:    'Empleado'
+                }));
+                // También lo guarda en localStorage para que el dashboard lo muestre offline
+                const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
+                locales.push({ id: Date.now(), nombre, correo, edad: 0, rol: 'Empleado', estado: true });
+                localStorage.setItem('usuariosLocales', JSON.stringify(locales));
+            }
+
+            mostrarMensaje('¡Registro exitoso! Redirigiendo...', 'ok');
+            setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        }
+
+        // ─── INICIAR SESIÓN ────────────────────────────────────────────
+        async function iniciarSesion() {
+            const correo   = document.getElementById('login-correo').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!correo || !password) {
+                mostrarMensaje('Por favor ingresa tu correo y contraseña.', 'error');
+                return;
+            }
+
+            try {
+                // Trae todos los usuarios de la API y busca el correo
+                const res = await fetch(API_BASE + '/usuarios');
+                if (!res.ok) throw new Error('API error');
+
+                const usuarios = await res.json();
+                const usuario  = usuarios.find(u => u.correo === correo);
+
+                if (!usuario) {
+                    mostrarMensaje('Correo no encontrado. ¿Ya estás registrado?', 'error');
+                    return;
+                }
+
+                // Guarda sesión
+                sessionStorage.setItem('usuarioLogueado', JSON.stringify({
+                    id:     usuario.id,
+                    nombre: usuario.nombre,
+                    correo: usuario.correo,
+                    rol:    usuario.rol
+                }));
+
+            } catch (e) {
+                // Sin API: acepta cualquier correo que exista en localStorage
+                const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
+                const usuario = locales.find(u => u.correo === correo);
+
+                if (!usuario) {
+                    // Sin API y sin usuario local: deja pasar igual (modo demo)
+                    sessionStorage.setItem('usuarioLogueado', JSON.stringify({
+                        id: 0, nombre: 'Usuario', correo, rol: 'Empleado'
+                    }));
+                } else {
+                    sessionStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
+                }
+            }
+
+            mostrarMensaje('¡Bienvenido! Redirigiendo...', 'ok');
+
+            // Guardar también en localStorage para que el dashboard lo muestre
+const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
+const yaExiste = locales.some(u => u.correo === correo);
+if (!yaExiste) {
+    locales.push({
+        id:            usuario.id || Date.now(),
+        nombre:        usuario.nombre,
+        correo:        usuario.correo,
+        edad:          usuario.edad || 0,
+        rol:           usuario.rol  || 'Empleado',
+        estado:        true,
+        fechaRegistro: new Date().toLocaleDateString('es-CO'),
+        ultimoLogin:   new Date().toLocaleDateString('es-CO')
+    });
+    localStorage.setItem('usuariosLocales', JSON.stringify(locales));
+}
+            setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        }
     </script>
 
 </body>
