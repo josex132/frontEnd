@@ -73,6 +73,9 @@ function guardarUsuariosLocal(lista) {
     localStorage.setItem('usuariosLocales', JSON.stringify(lista));
 }
 
+// =============================================
+// MODALES Y UTILS
+// =============================================
 function cerrarModal(id) {
     document.getElementById(id).classList.remove('abierto');
 }
@@ -503,7 +506,7 @@ function renderUsuarios() {
 }
 
 // =============================================
-// USUARIOS - CREAR
+// USUARIOS - CREAR (CORREGIDO REFLEJO EN LISTA)
 // =============================================
 async function crearUsuario() {
     const nombre = document.getElementById('nu-nombre').value.trim();
@@ -532,9 +535,10 @@ async function crearUsuario() {
                 return;
             }
 
+            // Sincronizamos la API para traernos la lista actualizada con el nuevo usuario
             await sincronizarConAPI();
             
-            // Inyectamos la edad localmente justo después de la sincronización de la API
+            // Inyectamos la edad localmente buscando por el campo correcto de la sincronización (u.correo)
             if (edad !== '-') {
                 let lista = obtenerUsuarios();
                 const idx = lista.findIndex(u => u.correo.toLowerCase().trim() === correo.toLowerCase().trim());
@@ -543,16 +547,19 @@ async function crearUsuario() {
                     guardarUsuariosLocal(lista);
                 }
             }
-        } catch {
+        } catch (e) {
             guardarUsuarioLocal(nombre, correo, edad, rol);
         }
     } else {
         guardarUsuarioLocal(nombre, correo, edad, rol);
     }
 
-    document.getElementById('modal-user-toggle').checked = false;
+    // Quitamos el check para cerrar el modal/formulario automáticamente
+    const toggle = document.getElementById('modal-user-toggle');
+    if (toggle) toggle.checked = false;
+
     limpiarFormUsuario();
-    renderUsuarios();
+    renderUsuarios(); // 👈 Fuerza el renderizado visual al instante
     actualizarTarjetasDashboard();
 }
 
@@ -569,8 +576,17 @@ function guardarUsuarioLocal(nombre, correo, edad, rol) {
     guardarUsuariosLocal(lista);
 }
 
+function limpiarFormUsuario() {
+    ['nu-nombre', 'nu-correo', 'nu-edad'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const rolSel = document.getElementById('nu-rol');
+    if (rolSel) rolSel.selectedIndex = 0;
+}
+
 // =============================================
-// USUARIOS - EDITAR
+// USUARIOS - EDITAR / GUARDAR CAMBIOS
 // =============================================
 function abrirEditarUsuario(id) {
     const usuarios = obtenerUsuarios();
@@ -619,7 +635,6 @@ async function guardarUsuario() {
             let lista = obtenerUsuarios();
             const idx = lista.findIndex(u => u.id == id);
             if (idx !== -1) {
-                运行 = edad;
                 lista[idx].edad = edad;
                 guardarUsuariosLocal(lista);
             }
