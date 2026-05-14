@@ -109,7 +109,7 @@ function guardarUsuarioSesionEnLocal() {
             id:            sesion.id || Date.now(),
             nombre:        sesion.nombre  || 'Sin nombre',
             correo:        sesion.correo  || '',
-            edad:          sesion.edad    || 0,
+            edad:          sesion.edad    || '-',
             rol:           sesion.rol     || 'Empleado',
             estado:        true,
             fechaRegistro: new Date().toLocaleDateString('es-CO'),
@@ -155,7 +155,6 @@ async function sincronizarConAPI() {
         }
 
         if (usuariosAPI.length === 0) {
-            // Ponemos aquí tu usuario por defecto para que no desaparezca
             usuariosAPI = [
                 { id: 3, nombre: "pee", email: "josemz.90rz@gmail.com", rol: "Empleado", activo: true }
             ];
@@ -178,38 +177,37 @@ async function sincronizarConAPI() {
 
         guardarProductosLocal(productosNorm);
 
-        // Combinar usuarios de API + usuario de sesión local (sin duplicados)
-        // Normalizar los usuarios que vienen de la API
-const usuariosLocales = obtenerUsuarios();
-const fechaHoy = new Date().toLocaleDateString('es-CO');
+        // Normalizar los usuarios que vienen de la API cruzándolos con la memoria local
+        const usuariosLocales = obtenerUsuarios();
+        const fechaHoy = new Date().toLocaleDateString('es-CO');
 
-const usuariosNorm = usuariosAPI.map(u => {
-    // Buscamos si este usuario ya existía en nuestro localStorage antes de la sincronización
-    const local = usuariosLocales.find(l => l.correo.toLowerCase().trim() === u.email.toLowerCase().trim());
-    return {
-        id:            u.id,
-        nombre:        u.nombre,
-        correo:        u.email,
-        edad:          local?.edad || '-', // 👈 Si ya tenía edad local se la deja, si no, pone un guion vacío
-        rol:           u.rol || 'Empleado',
-        estado:        u.activo,
-        fechaRegistro: local?.fechaRegistro || u.fechaRegistro || fechaHoy,
-        ultimoLogin:   local?.ultimoLogin   || u.ultimoLogin   || fechaHoy
-    };
-});
+        const usuariosNorm = usuariosAPI.map(u => {
+            // Buscamos si este usuario ya existía en nuestro localStorage antes de la sincronización
+            const local = usuariosLocales.find(l => l.correo.toLowerCase().trim() === u.email.toLowerCase().trim());
+            return {
+                id:            u.id,
+                nombre:        u.nombre,
+                correo:        u.email,
+                edad:          local?.edad || '-', // Mantiene la edad del localStorage si existe, si no, deja '-'
+                rol:           u.rol || 'Empleado',
+                estado:        u.activo,
+                fechaRegistro: local?.fechaRegistro || u.fechaRegistro || fechaHoy,
+                ultimoLogin:   local?.ultimoLogin   || u.ultimoLogin   || fechaHoy
+            };
+        });
 
-// FILTRADO SEGURO: Extraer los emails de la API en minúsculas
-const emailsAPILower = usuariosAPI.map(u => u.email.toLowerCase().trim());
+        // FILTRADO SEGURO: Extraer los emails de la API en minúsculas
+        const emailsAPILower = usuariosAPI.map(u => u.email.toLowerCase().trim());
 
-// Filtrar los usuarios locales asegurando que NO existan en la API ni compartan ID con los nuevos
-const soloLocales = usuariosLocales.filter(u => {
-    const correoExiste = emailsAPILower.includes(u.correo.toLowerCase().trim());
-    const idExiste = usuariosNorm.some(un => un.id === u.id);
-    return !correoExiste && !idExiste; // Solo pasa si es realmente único
-});
+        // Filtrar los usuarios locales asegurando que NO existan en la API ni compartan ID con los nuevos
+        const soloLocales = usuariosLocales.filter(u => {
+            const correoExiste = emailsAPILower.includes(u.correo.toLowerCase().trim());
+            const idExiste = usuariosNorm.some(un => un.id === u.id);
+            return !correoExiste && !idExiste; // Solo pasa si es realmente único
+        });
 
-// Guardar la combinación limpia
-guardarUsuariosLocal([...usuariosNorm, ...soloLocales]);
+        // Guardar la combinación limpia
+        guardarUsuariosLocal([...usuariosNorm, ...soloLocales]);
         modoOffline = false;
         mostrarBanner('✅ Conectado al servidor', 'ok');
         return true;
@@ -242,30 +240,34 @@ function actualizarTarjetasDashboard() {
 
     // Alertas stock bajo
     const divAlertas = document.getElementById('dash-alertas');
-    divAlertas.innerHTML = stockBajo.length === 0
-        ? '<p style="color:green;">✅ Todo el inventario está en buen estado.</p>'
-        : stockBajo.map(p => `
-            <div style="background:#fff3cd;border:1px solid #ffc107;padding:10px 15px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;">
-                <span>⚠️ <strong>${p.nombre}</strong></span>
-                <span style="color:red;font-weight:bold;">Stock: ${p.stock}</span>
-            </div>
-        `).join('');
+    if (divAlertas) {
+        divAlertas.innerHTML = stockBajo.length === 0
+            ? '<p style="color:green;">✅ Todo el inventario está en buen estado.</p>'
+            : stockBajo.map(p => `
+                <div style="background:#fff3cd;border:1px solid #ffc107;padding:10px 15px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;">
+                    <span>⚠️ <strong>${p.nombre}</strong></span>
+                    <span style="color:red;font-weight:bold;">Stock: ${p.stock}</span>
+                </div>
+            `).join('');
+    }
 
     // Últimos 5 productos agregados
     const divUltimos = document.getElementById('dash-ultimos');
-    const ultimos = [...productos].slice(-5).reverse();
-    divUltimos.innerHTML = ultimos.length === 0
-        ? '<p style="color:#888;">No hay productos registrados.</p>'
-        : ultimos.map(p => `
-            <div style="background:#f5f8f0;border:1px solid #c8d8b0;padding:10px 15px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-                <span><strong>${p.nombre}</strong> <small style="color:#888;">(${p.categoria})</small></span>
-                <span style="color:var(--dark-green);font-weight:bold;">$${parsearPrecio(p.precio).toLocaleString('es-CO')}</span>
-            </div>
-        `).join('');
+    if (divUltimos) {
+        const ultimos = [...productos].slice(-5).reverse();
+        divUltimos.innerHTML = ultimos.length === 0
+            ? '<p style="color:#888;">No hay productos registrados.</p>'
+            : ultimos.map(p => `
+                <div style="background:#f5f8f0;border:1px solid #c8d8b0;padding:10px 15px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+                    <span><strong>${p.nombre}</strong> <small style="color:#888;">(${p.categoria})</small></span>
+                    <span style="color:var(--dark-green);font-weight:bold;">$${parsearPrecio(p.precio).toLocaleString('es-CO')}</span>
+                </div>
+            `).join('');
+    }
 }
 
 // =============================================
-// INVENTARIO - RENDER TABLA
+// INVENTARIO - RENDER TABLA (CORREGIDO)
 // =============================================
 function renderInventario() {
     const productos = obtenerProductos();
@@ -274,14 +276,14 @@ function renderInventario() {
 
     tbody.innerHTML = productos.length === 0
         ? '<tr><td colspan="7" style="text-align:center;padding:20px;color:#888;">No hay productos registrados.</td></tr>'
-        : productos.map(p => {
+        : productos.map((p, index) => {
             const stockVal = parseInt(p.stock) || 0;
             const stockBadge = stockVal < 10
                 ? `<span style="background:#ffc107;color:#333;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:bold;">Stock bajo</span>`
                 : `<span style="background:#28a745;color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;">${stockVal}</span>`;
             return `
                 <tr>
-                    <td>${p.id}</td>
+                    <td>${index + 1}</td> 
                     <td>${p.nombre}</td>
                     <td>${p.marca}</td>
                     <td>$${parsearPrecio(p.precio).toLocaleString('es-CO')}</td>
@@ -296,9 +298,9 @@ function renderInventario() {
         }).join('');
 }
 
-// ====
+// =============================================
 // INVENTARIO - CREAR PRODUCTO
-// =================
+// =============================================
 async function crearProducto() {
     const nombre    = document.getElementById('np-nombre').value.trim();
     const marca     = document.getElementById('np-marca').value.trim();
@@ -307,14 +309,14 @@ async function crearProducto() {
     const categoria = document.getElementById('np-cat').value;
 
     if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
-    alert('Por favor completa todos los campos.');
-    return;
-}
+        alert('Por favor completa todos los campos.');
+        return;
+    }
 
-if (/^\d+$/.test(nombre)) {
-    alert('El nombre del producto no puede ser solo números. Escribe un nombre válido.');
-    return;
-}
+    if (/^\d+$/.test(nombre)) {
+        alert('El nombre del producto no puede ser solo números. Escribe un nombre válido.');
+        return;
+    }
 
     if (!modoOffline) {
         try {
@@ -335,7 +337,6 @@ if (/^\d+$/.test(nombre)) {
                 return;
             }
 
-            // Resincronizar desde el servidor: los IDs los asigna el backend
             await sincronizarConAPI();
         } catch (e) {
             alert('No se pudo conectar al servidor. Guardando localmente.');
@@ -353,7 +354,6 @@ if (/^\d+$/.test(nombre)) {
 
 function guardarProductoLocal(nombre, marca, precio, stock, categoria) {
     const lista = obtenerProductos();
-    // ID local: usar el máximo actual + 1 para evitar colisiones
     const maxId = lista.reduce((max, p) => Math.max(max, p.id || 0), 0);
     lista.push({ id: maxId + 1, nombre, marca, precio, stock, categoria });
     guardarProductosLocal(lista);
@@ -366,9 +366,9 @@ function limpiarFormProducto() {
     document.getElementById('np-cat').selectedIndex = 0;
 }
 
-// ====
+// =============================================
 // INVENTARIO - EDITAR PRODUCTO
-// =========
+// =============================================
 function abrirEditarProducto(id) {
     const productos = obtenerProductos();
     const p = productos.find(x => x.id == id);
@@ -395,15 +395,15 @@ async function guardarProducto() {
     const stock     = parseInt(document.getElementById('ep-stock').value);
     const categoria = document.getElementById('ep-cat').value;
 
-   if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
-    alert('Por favor completa todos los campos.');
-    return;
-}
+    if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
+        alert('Por favor completa todos los campos.');
+        return;
+    }
 
-if (/^\d+$/.test(nombre)) {
-    alert('El nombre del producto no puede ser solo números. Escribe un nombre válido.');
-    return;
-}
+    if (/^\d+$/.test(nombre)) {
+        alert('El nombre del producto no puede ser solo números. Escribe un nombre válido.');
+        return;
+    }
 
     const id = editandoProductoId;
 
@@ -443,9 +443,9 @@ function actualizarProductoLocal(id, nombre, marca, precio, stock, categoria) {
     }
 }
 
-// =====
+// =============================================
 // INVENTARIO - ELIMINAR PRODUCTO
-// ========
+// =============================================
 async function eliminarProducto(id) {
     if (!confirm('¿Eliminar este producto?')) return;
 
@@ -470,9 +470,9 @@ function eliminarProductoLocal(id) {
     guardarProductosLocal(lista);
 }
 
-// =======
-// USUARIOS - RENDER TABLA
-// =====
+// =============================================
+// USUARIOS - RENDER TABLA (CORREGIDO)
+// =============================================
 function renderUsuarios() {
     const usuarios = obtenerUsuarios();
     const tbody = document.getElementById('tabla-usuarios');
@@ -480,9 +480,9 @@ function renderUsuarios() {
 
     tbody.innerHTML = usuarios.length === 0
         ? '<tr><td colspan="9" style="text-align:center;padding:20px;color:#888;">No hay usuarios registrados.</td></tr>'
-        : usuarios.map(u => `
+        : usuarios.map((u, index) => `
             <tr>
-                <td>${u.id}</td>
+                <td>${index + 1}</td> 
                 <td>${u.nombre}</td>
                 <td>${u.correo}</td>
                 <td>${u.edad || '-'}</td>
@@ -502,13 +502,13 @@ function renderUsuarios() {
         `).join('');
 }
 
-// ==========
+// =============================================
 // USUARIOS - CREAR
-// ========
+// =============================================
 async function crearUsuario() {
     const nombre = document.getElementById('nu-nombre').value.trim();
     const correo = document.getElementById('nu-correo').value.trim();
-    const edad   = parseInt(document.getElementById('nu-edad').value) || 0;
+    const edad   = document.getElementById('nu-edad').value.trim() || '-';
     const rol    = document.getElementById('nu-rol').value;
 
     if (!nombre || !correo) {
@@ -516,7 +516,6 @@ async function crearUsuario() {
         return;
     }
 
-    // La API requiere password; usamos uno temporal
     const password = 'usuario123';
 
     if (!modoOffline) {
@@ -534,6 +533,16 @@ async function crearUsuario() {
             }
 
             await sincronizarConAPI();
+            
+            // Inyectamos la edad localmente justo después de la sincronización de la API
+            if (edad !== '-') {
+                let lista = obtenerUsuarios();
+                const idx = lista.findIndex(u => u.correo.toLowerCase().trim() === correo.toLowerCase().trim());
+                if (idx !== -1) {
+                    lista[idx].edad = edad;
+                    guardarUsuariosLocal(lista);
+                }
+            }
         } catch {
             guardarUsuarioLocal(nombre, correo, edad, rol);
         }
@@ -560,16 +569,9 @@ function guardarUsuarioLocal(nombre, correo, edad, rol) {
     guardarUsuariosLocal(lista);
 }
 
-function limpiarFormUsuario() {
-    ['nu-nombre', 'nu-correo', 'nu-edad'].forEach(id => {
-        document.getElementById(id).value = '';
-    });
-    document.getElementById('nu-rol').selectedIndex = 0;
-}
-
-// ======
+// =============================================
 // USUARIOS - EDITAR
-// ==============
+// =============================================
 function abrirEditarUsuario(id) {
     const usuarios = obtenerUsuarios();
     const u = usuarios.find(x => x.id == id);
@@ -578,7 +580,7 @@ function abrirEditarUsuario(id) {
     editandoUsuarioId = id;
     document.getElementById('eu-nombre').value = u.nombre;
     document.getElementById('eu-correo').value = u.correo;
-    document.getElementById('eu-edad').value   = u.edad || '';
+    document.getElementById('eu-edad').value   = (u.edad === '-') ? '' : u.edad;
 
     const sel = document.getElementById('eu-rol');
     for (let i = 0; i < sel.options.length; i++) {
@@ -591,7 +593,7 @@ function abrirEditarUsuario(id) {
 async function guardarUsuario() {
     const nombre = document.getElementById('eu-nombre').value.trim();
     const correo = document.getElementById('eu-correo').value.trim();
-    const edad   = parseInt(document.getElementById('eu-edad').value) || 0;
+    const edad   = document.getElementById('eu-edad').value.trim() || '-';
     const rol    = document.getElementById('eu-rol').value;
 
     if (!nombre || !correo) {
@@ -609,7 +611,18 @@ async function guardarUsuario() {
                 body: JSON.stringify({ nombre, email: correo, password: 'usuario123', rol })
             });
             if (!res.ok) throw new Error();
+            
+            // 1. Sincronizamos con la API para traer lo nuevo de Java
             await sincronizarConAPI();
+            
+            // 2. PARCHE QUIRÚRGICO: Interceptamos el localStorage y le inyectamos la edad escrita a mano
+            let lista = obtenerUsuarios();
+            const idx = lista.findIndex(u => u.id == id);
+            if (idx !== -1) {
+                运行 = edad;
+                lista[idx].edad = edad;
+                guardarUsuariosLocal(lista);
+            }
         } catch {
             actualizarUsuarioLocal(id, nombre, correo, edad, rol);
         }
@@ -632,9 +645,9 @@ function actualizarUsuarioLocal(id, nombre, correo, edad, rol) {
     }
 }
 
-// ===
+// =============================================
 // USUARIOS - ELIMINAR
-// ======
+// =============================================
 async function eliminarUsuario(id) {
     if (!confirm('¿Eliminar este usuario?')) return;
 
