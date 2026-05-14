@@ -184,13 +184,13 @@ const usuariosLocales = obtenerUsuarios();
 const fechaHoy = new Date().toLocaleDateString('es-CO');
 
 const usuariosNorm = usuariosAPI.map(u => {
-    // Buscamos coincidencia ignorando mayúsculas/minúsculas para asegurar el match
+    // Buscamos si este usuario ya existía en nuestro localStorage antes de la sincronización
     const local = usuariosLocales.find(l => l.correo.toLowerCase().trim() === u.email.toLowerCase().trim());
     return {
         id:            u.id,
         nombre:        u.nombre,
         correo:        u.email,
-        edad:          local?.edad || u.edad || '13',
+        edad:          local?.edad || '-', // 👈 Si ya tenía edad local se la deja, si no, pone un guion vacío
         rol:           u.rol || 'Empleado',
         estado:        u.activo,
         fechaRegistro: local?.fechaRegistro || u.fechaRegistro || fechaHoy,
