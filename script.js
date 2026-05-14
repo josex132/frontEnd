@@ -13,19 +13,45 @@ let modoOffline        = false;
 // AL CARGAR LA PÁGINA
 // =============================================
 document.addEventListener("DOMContentLoaded", async () => {
-    // Limpiar localStorage viejo para evitar IDs acumulados
     limpiarCacheLocal();
     guardarUsuarioSesionEnLocal();
     await renderDashboard();
+    
+    // Ejecutamos los renders de las tablas para que muestren los datos de una vez
+    renderInventario();
+    if (typeof renderUsuarios === 'function') {
+        renderUsuarios();
+    }
 });
 
 // =============================================
 // LIMPIEZA DE CACHÉ (evita IDs acumulados)
 // =============================================
 function limpiarCacheLocal() {
-    // Solo borramos productos: los IDs siempre los da el servidor
-    // Usuarios locales se conservan (sesión actual)
-    localStorage.removeItem('productosLocales');
+    // Si no hay productos en el localStorage, le metemos los datos por defecto para el modo offline
+    if (!localStorage.getItem('productosLocales')) {
+        const productosPorDefecto = [
+            {
+                id: 1,
+                nombre: "raquetas",
+                marca: "tenis",
+                precio: 59.9,
+                stock: 10,
+                categoria: "Deportes",
+                disponible: true
+            },
+            {
+                id: 2,
+                nombre: "balon de futbol",
+                marca: "adidas",
+                precio: 30.0,
+                stock: 50,
+                categoria: "futbol",
+                disponible: true
+            }
+        ];
+        guardarProductosLocal(productosPorDefecto);
+    }
 }
 
 // =============================================
@@ -117,19 +143,35 @@ async function sincronizarConAPI() {
         ]);
         if (!resP.ok || !resU.ok) throw new Error('API no disponible');
 
-        const productosAPI = await resP.json();
-        const usuariosAPI  = await resU.json();
+        let productosAPI = await resP.json();
+        let usuariosAPI  = await resU.json();
+
+        // --- FUERZA DATOS DE PRUEBA SI LA API ENTRÓ VACÍA ---
+        if (productosAPI.length === 0) {
+            productosAPI = [
+                { id: 1, nombre: "raquetas", precio: 59.9, stock: 10, disponible: true, descripcion: "Deportes|tenis" },
+                { id: 2, nombre: "Mouse", precio: 25.0, stock: 50, disponible: true, descripcion: "Tecnología|Genérico" }
+            ];
+        }
+
+        if (usuariosAPI.length === 0) {
+            // Ponemos aquí tu usuario por defecto para que no desaparezca
+            usuariosAPI = [
+                { id: 3, nombre: "pee", email: "josemz.90rz@gmail.com", rol: "Empleado", activo: true }
+            ];
+        }
+        // ----------------------------------------------------
 
         // Normalizar productos: descripcion tiene formato "Categoria|Marca"
         const productosNorm = productosAPI.map(p => {
             const desc = p.descripcion ? p.descripcion.split('|') : ['-', '-'];
             return {
-                id:        p.id,
-                nombre:    p.nombre,
-                marca:     desc[1]?.trim() || '-',
-                precio:    p.precio,
-                stock:     p.stock,
-                categoria: desc[0]?.trim() || '-',
+                id:         p.id,
+                nombre:     p.nombre,
+                marca:      desc[1]?.trim() || '-',
+                precio:     p.precio,
+                stock:      p.stock,
+                categoria:  desc[0]?.trim() || '-',
                 disponible: p.disponible
             };
         });
@@ -137,24 +179,37 @@ async function sincronizarConAPI() {
         guardarProductosLocal(productosNorm);
 
         // Combinar usuarios de API + usuario de sesión local (sin duplicados)
-        const usuariosLocales = obtenerUsuarios();
-        const emailsAPI = usuariosAPI.map(u => u.email);
+        // Normalizar los usuarios que vienen de la API
+const usuariosLocales = obtenerUsuarios();
+const fechaHoy = new Date().toLocaleDateString('es-CO');
 
-        const usuariosNorm = usuariosAPI.map(u => ({
-            id:            u.id,
-            nombre:        u.nombre,
-            correo:        u.email,
-            edad:          '-',
-            rol:           u.rol || 'Empleado',
-            estado:        u.activo,
-            fechaRegistro: '-',
-            ultimoLogin:   '-'
-        }));
+const usuariosNorm = usuariosAPI.map(u => {
+    // Buscamos coincidencia ignorando mayúsculas/minúsculas para asegurar el match
+    const local = usuariosLocales.find(l => l.correo.toLowerCase().trim() === u.email.toLowerCase().trim());
+    return {
+        id:            u.id,
+        nombre:        u.nombre,
+        correo:        u.email,
+        edad:          local?.edad || u.edad || '13',
+        rol:           u.rol || 'Empleado',
+        estado:        u.activo,
+        fechaRegistro: local?.fechaRegistro || u.fechaRegistro || fechaHoy,
+        ultimoLogin:   local?.ultimoLogin   || u.ultimoLogin   || fechaHoy
+    };
+});
 
-        // Agregar usuarios solo locales (sesión) que no están en la API
-        const soloLocales = usuariosLocales.filter(u => !emailsAPI.includes(u.correo));
-        guardarUsuariosLocal([...usuariosNorm, ...soloLocales]);
+// FILTRADO SEGURO: Extraer los emails de la API en minúsculas
+const emailsAPILower = usuariosAPI.map(u => u.email.toLowerCase().trim());
 
+// Filtrar los usuarios locales asegurando que NO existan en la API ni compartan ID con los nuevos
+const soloLocales = usuariosLocales.filter(u => {
+    const correoExiste = emailsAPILower.includes(u.correo.toLowerCase().trim());
+    const idExiste = usuariosNorm.some(un => un.id === u.id);
+    return !correoExiste && !idExiste; // Solo pasa si es realmente único
+});
+
+// Guardar la combinación limpia
+guardarUsuariosLocal([...usuariosNorm, ...soloLocales]);
         modoOffline = false;
         mostrarBanner('✅ Conectado al servidor', 'ok');
         return true;

@@ -84,23 +84,23 @@
             el.textContent = texto;
             el.style.display = 'block';
             el.style.background = tipo === 'error' ? '#f8d7da' : '#d4edda';
-            el.style.color    = tipo === 'error' ? '#721c24'  : '#155724';
-            el.style.border   = tipo === 'error' ? '1px solid #f5c6cb' : '1px solid #c3e6cb';
+            el.style.color      = tipo === 'error' ? '#721c24'  : '#155724';
+            el.style.border     = tipo === 'error' ? '1px solid #f5c6cb' : '1px solid #c3e6cb';
         }
 
         function mostrarRegistro() {
-            document.getElementById("loginForm").style.display = "none";
-            document.getElementById("registroForm").style.display = "block";
-            document.getElementById("btnRegistro").style.background = "white";
-            document.getElementById("btnLogin").style.background = "transparent";
+            document.getElementById('loginForm').style.display    = 'none';
+            document.getElementById('registroForm').style.display = 'block';
+            document.getElementById('btnRegistro').style.background = 'white';
+            document.getElementById('btnLogin').style.background    = 'transparent';
             document.getElementById('mensaje').style.display = 'none';
         }
 
         function mostrarLogin() {
-            document.getElementById("loginForm").style.display = "block";
-            document.getElementById("registroForm").style.display = "none";
-            document.getElementById("btnLogin").style.background = "white";
-            document.getElementById("btnRegistro").style.background = "transparent";
+            document.getElementById('loginForm').style.display    = 'block';
+            document.getElementById('registroForm').style.display = 'none';
+            document.getElementById('btnLogin').style.background    = 'white';
+            document.getElementById('btnRegistro').style.background = 'transparent';
             document.getElementById('mensaje').style.display = 'none';
         }
 
@@ -123,16 +123,30 @@
                 return;
             }
 
+            const ahora = new Date();
+            const fechaHoraRegistro = ahora.toLocaleDateString('es-CO') + ' ' +
+                ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+
             const nuevoUsuario = {
-    nombre:   nombre,
-    email:    correo,
-    password: password,
-    rol:      'Empleado',
-    activo:   true
-};
+                nombre,
+                email:    correo,
+                password,
+                rol:      'Empleado',
+                activo:   true
+            };
+
+            let usuarioGuardado = {
+                id:            Date.now(),
+                nombre,
+                correo,
+                edad:          0,
+                rol:           'Empleado',
+                estado:        true,
+                fechaRegistro: fechaHoraRegistro,
+                ultimoLogin:   fechaHoraRegistro
+            };
 
             try {
-                // Intenta registrar en la API
                 const res = await fetch(API_BASE + '/usuarios', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -142,25 +156,25 @@
                 if (!res.ok) throw new Error('API error');
 
                 const creado = await res.json();
-                // Guarda sesión con los datos que devolvió la API
-                sessionStorage.setItem('usuarioLogueado', JSON.stringify({
-                    id:     creado.id,
-                    nombre: creado.nombre,
-                    correo: creado.correo,
-                    rol:    creado.rol
-                }));
+                usuarioGuardado.id = creado.id || usuarioGuardado.id;
 
             } catch (e) {
-                // Si la API no está, guarda localmente de todas formas
-                sessionStorage.setItem('usuarioLogueado', JSON.stringify({
-                    id:     Date.now(),
-                    nombre,
-                    correo,
-                    rol:    'Empleado'
-                }));
-                // También lo guarda en localStorage para que el dashboard lo muestre offline
-                const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
-                locales.push({ id: Date.now(), nombre, correo, edad: 0, rol: 'Empleado', estado: true });
+                // Sin API: continúa con datos locales
+            }
+
+            sessionStorage.setItem('usuarioLogueado', JSON.stringify({
+                id:          usuarioGuardado.id,
+                nombre,
+                correo,
+                rol:         'Empleado',
+                ultimoLogin: fechaHoraRegistro
+            }));
+
+            // Guardar en localStorage con fecha y hora
+            const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
+            const yaExiste = locales.some(u => u.correo === correo);
+            if (!yaExiste) {
+                locales.push(usuarioGuardado);
                 localStorage.setItem('usuariosLocales', JSON.stringify(locales));
             }
 
@@ -178,60 +192,63 @@
                 return;
             }
 
+            const ahora = new Date();
+            const fechaHoraLogin = ahora.toLocaleDateString('es-CO') + ' ' +
+                ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+
+            let usuarioFinal = null;
+
             try {
-                // Trae todos los usuarios de la API y busca el correo
                 const res = await fetch(API_BASE + '/usuarios');
                 if (!res.ok) throw new Error('API error');
 
-                const usuarios = await res.json();
-                const usuario  = usuarios.find(u => u.correo === correo);
+                const usuarios  = await res.json();
+                const encontrado = usuarios.find(u => u.email === correo);
 
-                if (!usuario) {
+                if (!encontrado) {
                     mostrarMensaje('Correo no encontrado. ¿Ya estás registrado?', 'error');
                     return;
                 }
 
-                // Guarda sesión
-                sessionStorage.setItem('usuarioLogueado', JSON.stringify({
-                    id:     usuario.id,
-                    nombre: usuario.nombre,
-                    correo: usuario.correo,
-                    rol:    usuario.rol
-                }));
+                usuarioFinal = {
+                    id:          encontrado.id,
+                    nombre:      encontrado.nombre,
+                    correo:      encontrado.email,
+                    rol:         encontrado.rol || 'Empleado',
+                    ultimoLogin: fechaHoraLogin
+                };
 
             } catch (e) {
-                // Sin API: acepta cualquier correo que exista en localStorage
-                const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
-                const usuario = locales.find(u => u.correo === correo);
+                const locales    = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
+                const encontrado = locales.find(u => u.correo === correo);
 
-                if (!usuario) {
-                    // Sin API y sin usuario local: deja pasar igual (modo demo)
-                    sessionStorage.setItem('usuarioLogueado', JSON.stringify({
-                        id: 0, nombre: 'Usuario', correo, rol: 'Empleado'
-                    }));
-                } else {
-                    sessionStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
-                }
+                usuarioFinal = encontrado
+                    ? { ...encontrado, ultimoLogin: fechaHoraLogin }
+                    : { id: 0, nombre: 'Usuario', correo, rol: 'Empleado', ultimoLogin: fechaHoraLogin };
             }
 
-            mostrarMensaje('¡Bienvenido! Redirigiendo...', 'ok');
+            sessionStorage.setItem('usuarioLogueado', JSON.stringify(usuarioFinal));
 
-            // Guardar también en localStorage para que el dashboard lo muestre
-const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
-const yaExiste = locales.some(u => u.correo === correo);
-if (!yaExiste) {
-    locales.push({
-        id:            usuario.id || Date.now(),
-        nombre:        usuario.nombre,
-        correo:        usuario.correo,
-        edad:          usuario.edad || 0,
-        rol:           usuario.rol  || 'Empleado',
-        estado:        true,
-        fechaRegistro: new Date().toLocaleDateString('es-CO'),
-        ultimoLogin:   new Date().toLocaleDateString('es-CO')
-    });
-    localStorage.setItem('usuariosLocales', JSON.stringify(locales));
-}
+            // Actualizar ultimoLogin en localStorage
+            const locales = JSON.parse(localStorage.getItem('usuariosLocales') || '[]');
+            const idx = locales.findIndex(u => u.correo === correo);
+            if (idx !== -1) {
+                locales[idx].ultimoLogin = fechaHoraLogin;
+            } else {
+                locales.push({
+                    id:            usuarioFinal.id || Date.now(),
+                    nombre:        usuarioFinal.nombre,
+                    correo:        usuarioFinal.correo,
+                    edad:          0,
+                    rol:           usuarioFinal.rol,
+                    estado:        true,
+                    fechaRegistro: ahora.toLocaleDateString('es-CO'),
+                    ultimoLogin:   fechaHoraLogin
+                });
+            }
+            localStorage.setItem('usuariosLocales', JSON.stringify(locales));
+
+            mostrarMensaje('¡Bienvenido! Redirigiendo...', 'ok');
             setTimeout(() => window.location.href = 'dashboard.html', 1000);
         }
     </script>
