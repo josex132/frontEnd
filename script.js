@@ -38,6 +38,7 @@ function limpiarCacheLocal() {
                 precio: 59.9,
                 stock: 10,
                 categoria: "Deportes",
+                ubicacion: "Pasillo A, Estante 1",
                 disponible: true
             },
             {
@@ -47,6 +48,7 @@ function limpiarCacheLocal() {
                 precio: 30.0,
                 stock: 50,
                 categoria: "futbol",
+                ubicacion: "Pasillo B, Estante 2",
                 disponible: true
             }
         ];
@@ -278,20 +280,22 @@ function renderInventario() {
     if (!tbody) return;
 
     tbody.innerHTML = productos.length === 0
-        ? '<tr><td colspan="7" style="text-align:center;padding:20px;color:#888;">No hay productos registrados.</td></tr>'
+        ? '<tr><td colspan="9" style="text-align:center;padding:20px;color:#888;">No hay productos registrados.</td></tr>'
         : productos.map((p, index) => {
             const stockVal = parseInt(p.stock) || 0;
             const stockBadge = stockVal < 10
-                ? `<span style="background:#ffc107;color:#333;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:bold;">Stock bajo</span>`
-                : `<span style="background:#28a745;color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;">${stockVal}</span>`;
+                ? `<span style="background:#dc3545;color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:bold;">Stock Bajo</span>`
+                : `<span style="background:#28a745;color:white;padding:3px 10px;border-radius:20px;font-size:0.8rem;">Disponible</span>`;
             return `
                 <tr>
-                    <td>${index + 1}</td> 
+                    <td>${index + 1}</td>
                     <td>${p.nombre}</td>
                     <td>${p.marca}</td>
                     <td>$${parsearPrecio(p.precio).toLocaleString('es-CO')}</td>
-                    <td>${stockBadge}</td>
+                    <td>${stockVal}</td>
                     <td>${p.categoria}</td>
+                    <td>${p.ubicacion || '<span style="color:#aaa;">—</span>'}</td>
+                    <td>${stockBadge}</td>
                     <td>
                         <button class="btn-action edit-btn" onclick="abrirEditarProducto(${p.id})">✏️ Editar</button>
                         <button class="btn-action btn-del" onclick="eliminarProducto(${p.id})">🗑 Eliminar</button>
@@ -310,6 +314,7 @@ async function crearProducto() {
     const precio    = parseFloat(document.getElementById('np-precio').value);
     const stock     = parseInt(document.getElementById('np-stock').value);
     const categoria = document.getElementById('np-cat').value;
+    const ubicacion = document.getElementById('np-ubicacion').value.trim();
 
     if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
         alert('Por favor completa todos los campos.');
@@ -343,10 +348,10 @@ async function crearProducto() {
             await sincronizarConAPI();
         } catch (e) {
             alert('No se pudo conectar al servidor. Guardando localmente.');
-            guardarProductoLocal(nombre, marca, precio, stock, categoria);
+            guardarProductoLocal(nombre, marca, precio, stock, categoria, ubicacion);
         }
     } else {
-        guardarProductoLocal(nombre, marca, precio, stock, categoria);
+        guardarProductoLocal(nombre, marca, precio, stock, categoria, ubicacion);
     }
 
     document.getElementById('modal-product-toggle').checked = false;
@@ -355,15 +360,15 @@ async function crearProducto() {
     actualizarTarjetasDashboard();
 }
 
-function guardarProductoLocal(nombre, marca, precio, stock, categoria) {
+function guardarProductoLocal(nombre, marca, precio, stock, categoria, ubicacion = '') {
     const lista = obtenerProductos();
     const maxId = lista.reduce((max, p) => Math.max(max, p.id || 0), 0);
-    lista.push({ id: maxId + 1, nombre, marca, precio, stock, categoria });
+    lista.push({ id: maxId + 1, nombre, marca, precio, stock, categoria, ubicacion });
     guardarProductosLocal(lista);
 }
 
 function limpiarFormProducto() {
-    ['np-nombre', 'np-marca', 'np-precio', 'np-stock'].forEach(id => {
+    ['np-nombre', 'np-marca', 'np-precio', 'np-stock', 'np-ubicacion'].forEach(id => {
         document.getElementById(id).value = '';
     });
     document.getElementById('np-cat').selectedIndex = 0;
@@ -382,6 +387,7 @@ function abrirEditarProducto(id) {
     document.getElementById('ep-marca').value  = p.marca;
     document.getElementById('ep-precio').value = p.precio;
     document.getElementById('ep-stock').value  = p.stock;
+    document.getElementById('ep-ubicacion').value = p.ubicacion || '';
 
     const sel = document.getElementById('ep-cat');
     for (let i = 0; i < sel.options.length; i++) {
@@ -397,6 +403,7 @@ async function guardarProducto() {
     const precio    = parseFloat(document.getElementById('ep-precio').value);
     const stock     = parseInt(document.getElementById('ep-stock').value);
     const categoria = document.getElementById('ep-cat').value;
+    const ubicacion = document.getElementById('ep-ubicacion').value.trim();
 
     if (!nombre || !marca || isNaN(precio) || isNaN(stock)) {
         alert('Por favor completa todos los campos.');
@@ -425,10 +432,10 @@ async function guardarProducto() {
             if (!res.ok) throw new Error();
             await sincronizarConAPI();
         } catch {
-            actualizarProductoLocal(id, nombre, marca, precio, stock, categoria);
+            actualizarProductoLocal(id, nombre, marca, precio, stock, categoria, ubicacion);
         }
     } else {
-        actualizarProductoLocal(id, nombre, marca, precio, stock, categoria);
+        actualizarProductoLocal(id, nombre, marca, precio, stock, categoria, ubicacion);
     }
 
     cerrarModal('modal-edit-prod');
@@ -437,11 +444,11 @@ async function guardarProducto() {
     actualizarTarjetasDashboard();
 }
 
-function actualizarProductoLocal(id, nombre, marca, precio, stock, categoria) {
+function actualizarProductoLocal(id, nombre, marca, precio, stock, categoria, ubicacion = '') {
     const lista = obtenerProductos();
     const idx = lista.findIndex(p => p.id == id);
     if (idx !== -1) {
-        lista[idx] = { ...lista[idx], nombre, marca, precio, stock, categoria };
+        lista[idx] = { ...lista[idx], nombre, marca, precio, stock, categoria, ubicacion };
         guardarProductosLocal(lista);
     }
 }

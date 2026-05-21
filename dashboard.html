@@ -81,6 +81,7 @@
             <option>Tenis</option><option>Natación</option>
             <option>Ciclismo</option><option>Boxeo</option>
         </select>
+        <input id="np-ubicacion" type="text" placeholder="Ubicación (ej: Pasillo A, Estante 1)">
         <div style="display:flex;gap:10px;margin-top:15px;">
             <button class="btn-action btn-add" style="flex:1" onclick="crearProducto()">Guardar</button>
             <label  for="modal-product-toggle" class="btn-action btn-del" style="flex:1;cursor:pointer;">Cancelar</label>
@@ -118,6 +119,7 @@
             <option>Tenis</option><option>Natación</option>
             <option>Ciclismo</option><option>Boxeo</option>
         </select>
+        <input id="ep-ubicacion" type="text" placeholder="Ubicación (ej: Pasillo A, Estante 1)">
         <div style="display:flex;gap:10px;margin-top:15px;">
             <button class="btn-action btn-add" style="flex:1" onclick="guardarProducto()">Guardar</button>
             <button class="btn-action btn-del" style="flex:1" onclick="cerrarModal('modal-edit-prod')">Cancelar</button>
@@ -190,7 +192,7 @@
         </div>
         <table>
             <thead>
-                <tr><th>ID</th><th>Producto</th><th>Marca</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr>
+                <tr><th>ID</th><th>Producto</th><th>Marca</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Ubicación</th><th>Acciones</th></tr>
             </thead>
             <tbody id="tabla-inventario"></tbody>
         </table>
