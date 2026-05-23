@@ -8,136 +8,211 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* ── Tabs ── */
         .tab-content { display: none; }
         #t-dash:checked ~ .container #dash,
         #t-inv:checked  ~ .container #inv,
         #t-usr:checked  ~ .container #usr { display: block; }
-
         #t-dash:checked ~ nav label[for="t-dash"],
         #t-inv:checked  ~ nav label[for="t-inv"],
-        #t-usr:checked  ~ nav label[for="t-usr"] {
-            background-color: #5f6d4d;
-            color: white;
-        }
+        #t-usr:checked  ~ nav label[for="t-usr"] { background-color:#5f6d4d; color:white; }
 
+        /* ── Modales CSS (radio/checkbox) ── */
         .modal-overlay { display: none; }
         #modal-product-toggle:checked ~ #modalProduct { display: flex; }
         #modal-user-toggle:checked   ~ #modalUser    { display: flex; }
-
         .modal-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center; align-items: center; z-index: 2000;
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.5);
+            justify-content:center; align-items:center; z-index:2000;
         }
+
+        /* ── Modales JS ── */
+        .modal-js { display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:3000; }
+        .modal-js.abierto { display:flex; }
+
+        /* ── Contenido modal ── */
         .modal-content {
-            background: white; border: 3px solid var(--primary-green);
-            padding: 30px; border-radius: 25px; width: 400px; text-align: center;
+            background:white; border:3px solid var(--primary-green);
+            padding:30px; border-radius:25px; width:430px;
+            text-align:center; max-height:90vh; overflow-y:auto;
         }
         .modal-content input, .modal-content select {
-            width: 100%; padding: 12px; margin: 8px 0;
-            border-radius: 12px; border: none; background: var(--light-green);
-            box-sizing: border-box; font-family: 'Quicksand', sans-serif;
+            width:100%; padding:12px; margin:5px 0 10px;
+            border-radius:12px; border:none; background:var(--light-green);
+            box-sizing:border-box; font-family:'Quicksand',sans-serif; font-size:.95rem;
         }
-        .edit-btn { background: var(--dark-green); color: white; }
-
-        .modal-js {
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center; align-items: center; z-index: 3000;
+        .modal-label {
+            display:block; text-align:left; font-size:.78rem;
+            font-weight:bold; color:var(--dark-green); margin:6px 0 2px 4px;
         }
-        .modal-js.abierto { display: flex; }
+        .edit-btn { background:var(--dark-green); color:white; }
 
-        /* Banner de modo offline */
+        /* ── Banner API ── */
         #api-banner {
-            display: none;
-            background: #fff3cd; color: #856404;
-            border: 1px solid #ffc107;
-            padding: 8px 16px; border-radius: 10px;
-            margin: 10px 20px; font-size: 0.85rem;
-            text-align: center;
+            display:none;
+            padding:10px 20px;
+            font-size:.88rem; text-align:center;
+            font-family:Quicksand; font-weight:bold;
+            border-bottom: 2px solid transparent;
+            transition: background .4s, color .4s, border-color .4s;
         }
-        #api-banner.show { display: block; }
-        #api-banner.conectado { background: #d4edda; color: #155724; border-color: #28a745; }
+        #api-banner.show {
+            display:block;
+            background:#fff3cd; color:#856404;
+            border-color:#ffc107;
+        }
+        #api-banner.show.conectado {
+            background:#d1f0da; color:#1a6630;
+            border-color:#28a745;
+        }
     </style>
 </head>
 <body>
 
-<input type="radio" name="sections" id="t-dash" checked style="display:none;">
-<input type="radio" name="sections" id="t-inv"  style="display:none;">
-<input type="radio" name="sections" id="t-usr"  style="display:none;">
-<input type="checkbox" id="modal-product-toggle" style="display:none;">
-<input type="checkbox" id="modal-user-toggle"    style="display:none;">
+<!-- ── Inputs de navegación ── -->
+<input type="radio"    name="sections" id="t-dash" checked style="display:none;">
+<input type="radio"    name="sections" id="t-inv"          style="display:none;">
+<input type="radio"    name="sections" id="t-usr"          style="display:none;">
+<input type="checkbox" id="modal-product-toggle"           style="display:none;">
+<input type="checkbox" id="modal-user-toggle"              style="display:none;">
 
+<!-- ════════════════════════════════════════
+     MODAL: NUEVO PRODUCTO
+════════════════════════════════════════ -->
 <div id="modalProduct" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color:var(--dark-green)">Nuevo Producto</h2>
-        <input id="np-nombre"  type="text"   placeholder="Nombre del producto">
-        <input id="np-marca"   type="text"   placeholder="Marca (Nike, Adidas…)">
-        <input id="np-precio"  type="number" placeholder="Precio ($)" min="0" step="0.01">
-        <input id="np-stock"   type="number" placeholder="Cantidad" min="0">
+
+        <label class="modal-label">Nombre del producto *</label>
+        <input id="np-nombre"   type="text"   placeholder="Ej: Balón de Fútbol">
+
+        <label class="modal-label">Marca *</label>
+        <input id="np-marca"    type="text"   placeholder="Nike, Adidas, Wilson…">
+
+        <label class="modal-label">Precio ($) *</label>
+        <input id="np-precio"   type="number" placeholder="Ej: 85000" min="0" step="0.01">
+
+        <label class="modal-label">Cantidad en stock *</label>
+        <input id="np-stock"    type="number" placeholder="Ej: 25" min="0">
+
+        <label class="modal-label">Categoría</label>
         <select id="np-cat">
             <option>Fútbol</option><option>Running</option>
             <option>Tenis</option><option>Natación</option>
             <option>Ciclismo</option><option>Boxeo</option>
         </select>
+
+        <label class="modal-label">Ubicación en tienda</label>
+        <input id="np-ubicacion" type="text" placeholder="Ej: Pasillo A, Estante 2">
+
         <div style="display:flex;gap:10px;margin-top:15px;">
             <button class="btn-action btn-add" style="flex:1" onclick="crearProducto()">Guardar</button>
-            <label  for="modal-product-toggle" class="btn-action btn-del" style="flex:1;cursor:pointer;">Cancelar</label>
+            <label  for="modal-product-toggle" class="btn-action btn-del"
+                    style="flex:1;cursor:pointer;">Cancelar</label>
         </div>
     </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     MODAL: NUEVO USUARIO
+════════════════════════════════════════ -->
 <div id="modalUser" class="modal-overlay">
     <div class="modal-content">
         <h2 style="color:var(--dark-green)">Registrar Usuario</h2>
-        <input id="nu-nombre" type="text"   placeholder="Nombre completo">
+
+        <label class="modal-label">Nombre completo *</label>
+        <input id="nu-nombre" type="text"   placeholder="Ej: Carlos Martínez">
+
+        <label class="modal-label">Correo electrónico *</label>
         <input id="nu-correo" type="email"  placeholder="usuario@ejemplo.com">
-        <input id="nu-edad"   type="number" placeholder="Edad" min="1" max="120">
+
+        <label class="modal-label">Edad</label>
+        <input id="nu-edad"   type="number" placeholder="Ej: 28" min="1" max="120">
+
+        <label class="modal-label">Rol</label>
         <select id="nu-rol">
             <option>Empleado</option><option>Administrador</option>
         </select>
+
         <div style="display:flex;gap:10px;margin-top:15px;">
             <button class="btn-action btn-add" style="flex:1" onclick="crearUsuario()">Registrar</button>
-            <label  for="modal-user-toggle" class="btn-action btn-del" style="flex:1;cursor:pointer;">Cancelar</label>
+            <label  for="modal-user-toggle" class="btn-action btn-del"
+                    style="flex:1;cursor:pointer;">Cancelar</label>
         </div>
     </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     MODAL JS: EDITAR PRODUCTO
+════════════════════════════════════════ -->
 <div id="modal-edit-prod" class="modal-js">
     <div class="modal-content">
         <h2 style="color:var(--dark-green)">Editar Producto</h2>
-        <input id="ep-nombre" type="text"   placeholder="Nombre">
-        <input id="ep-marca"  type="text"   placeholder="Marca">
-        <input id="ep-precio" type="number" placeholder="Precio ($)" min="0" step="0.01">
-        <input id="ep-stock"  type="number" placeholder="Stock" min="0">
+
+        <label class="modal-label">Nombre del producto *</label>
+        <input id="ep-nombre"   type="text"   placeholder="Nombre">
+
+        <label class="modal-label">Marca *</label>
+        <input id="ep-marca"    type="text"   placeholder="Marca">
+
+        <label class="modal-label">Precio ($) *</label>
+        <input id="ep-precio"   type="number" placeholder="Precio" min="0" step="0.01">
+
+        <label class="modal-label">Stock *</label>
+        <input id="ep-stock"    type="number" placeholder="Stock" min="0">
+
+        <label class="modal-label">Categoría</label>
         <select id="ep-cat">
             <option>Fútbol</option><option>Running</option>
             <option>Tenis</option><option>Natación</option>
             <option>Ciclismo</option><option>Boxeo</option>
         </select>
+
+        <label class="modal-label">Ubicación en tienda</label>
+        <input id="ep-ubicacion" type="text" placeholder="Ej: Pasillo A, Estante 2">
+
         <div style="display:flex;gap:10px;margin-top:15px;">
             <button class="btn-action btn-add" style="flex:1" onclick="guardarProducto()">Guardar</button>
-            <button class="btn-action btn-del" style="flex:1" onclick="cerrarModal('modal-edit-prod')">Cancelar</button>
+            <button class="btn-action btn-del" style="flex:1"
+                    onclick="cerrarModal('modal-edit-prod')">Cancelar</button>
         </div>
     </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     MODAL JS: EDITAR USUARIO
+════════════════════════════════════════ -->
 <div id="modal-edit-usr" class="modal-js">
     <div class="modal-content">
         <h2 style="color:var(--dark-green)">Editar Usuario</h2>
+
+        <label class="modal-label">Nombre completo *</label>
         <input id="eu-nombre" type="text"   placeholder="Nombre completo">
+
+        <label class="modal-label">Correo electrónico *</label>
         <input id="eu-correo" type="email"  placeholder="correo@ejemplo.com">
+
+        <label class="modal-label">Edad</label>
         <input id="eu-edad"   type="number" placeholder="Edad" min="1" max="120">
+
+        <label class="modal-label">Rol</label>
         <select id="eu-rol">
             <option>Empleado</option><option>Administrador</option>
         </select>
+
         <div style="display:flex;gap:10px;margin-top:15px;">
             <button class="btn-action btn-add" style="flex:1" onclick="guardarUsuario()">Guardar</button>
-            <button class="btn-action btn-del" style="flex:1" onclick="cerrarModal('modal-edit-usr')">Cancelar</button>
+            <button class="btn-action btn-del" style="flex:1"
+                    onclick="cerrarModal('modal-edit-usr')">Cancelar</button>
         </div>
     </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     NAVEGACIÓN
+════════════════════════════════════════ -->
 <nav>
     <div><strong>SportStock</strong><br><small>Sistema de Inventario Deportivo</small></div>
     <div class="nav-links">
@@ -150,19 +225,33 @@
 
 <div id="api-banner"></div>
 
+<!-- ════════════════════════════════════════
+     CONTENIDO PRINCIPAL
+════════════════════════════════════════ -->
 <div class="container">
 
+    <!-- ── DASHBOARD ── -->
     <div id="dash" class="tab-content">
         <h2>Dashboard</h2>
         <div class="stats-grid">
-            <div class="stat-card"><h4>Total Productos</h4><strong id="st-prod">0</strong><span>Registrados</span></div>
-            <div class="stat-card"><h4>Valor Total</h4><strong id="st-valor">$0</strong><span>Inventario valorizado</span></div>
-            <div class="stat-card"><h4>Stock Bajo</h4><strong id="st-bajo" style="color:var(--text-red)">0</strong><span>Menos de 10 unidades</span></div>
-            <div class="stat-card"><h4>Usuarios</h4><strong id="st-usr">0</strong><span>Registrados</span></div>
+            <div class="stat-card">
+                <h4>Total Productos</h4><strong id="st-prod">0</strong><span>Registrados</span>
+            </div>
+            <div class="stat-card">
+                <h4>Valor Total</h4><strong id="st-valor">$0</strong><span>Inventario valorizado</span>
+            </div>
+            <div class="stat-card">
+                <h4>Stock Bajo</h4>
+                <strong id="st-bajo" style="color:var(--text-red)">0</strong>
+                <span>Menos de 10 unidades</span>
+            </div>
+            <div class="stat-card">
+                <h4>Usuarios</h4><strong id="st-usr">0</strong><span>Registrados</span>
+            </div>
         </div>
 
         <div class="list-section">
-            <h3> Alertas de Stock Bajo</h3>
+            <h3>⚠️ Alertas de Stock Bajo</h3>
             <div id="dash-alertas"></div>
             <label for="t-inv" class="btn-action btn-view-all"
                    style="display:block;text-align:center;margin-top:10px;"
@@ -173,8 +262,14 @@
             <h3>📦 Últimos Productos Agregados</h3>
             <div id="dash-ultimos"></div>
         </div>
+
+        <div class="list-section">
+            <h3>📋 Bitácora de Cambios</h3>
+            <div id="dash-bitacora"></div>
+        </div>
     </div>
 
+    <!-- ── INVENTARIO ── -->
     <div id="inv" class="tab-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
             <h2>Inventario</h2>
@@ -183,20 +278,16 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Producto</th>
-                    <th>Marca</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Categoría</th>
-                    <th>Ubicación</th>
-                    <th>Estado</th>
-                    <th>Acciones</th> </tr>
+                    <th>#</th><th>Producto</th><th>Marca</th><th>Precio</th>
+                    <th>Stock</th><th>Categoría</th><th>Ubicación</th>
+                    <th>Estado</th><th>Acciones</th>
+                </tr>
             </thead>
             <tbody id="tabla-inventario"></tbody>
         </table>
     </div>
 
+    <!-- ── USUARIOS ── -->
     <div id="usr" class="tab-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
             <h2>Gestión de Usuarios</h2>
@@ -204,26 +295,35 @@
         </div>
         <table>
             <thead>
-                <tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Edad</th><th>Rol</th><th>Estado</th><th>Fecha Registro</th><th>Último Login</th><th>Acciones</th></tr>
+                <tr>
+                    <th>#</th><th>Nombre</th><th>Correo</th><th>Edad</th><th>Rol</th>
+                    <th>Estado</th><th>Fecha Registro</th><th>Último Login</th><th>Acciones</th>
+                </tr>
             </thead>
             <tbody id="tabla-usuarios"></tbody>
         </table>
     </div>
 
-    <div style="background:#7d8c6a;color:white;padding:30px;border-radius:20px;margin-top:50px;display:flex;justify-content:space-between;align-items:flex-end;">
+    <!-- ── FOOTER ── -->
+    <div style="background:#7d8c6a;color:white;padding:30px;border-radius:20px;
+                margin-top:50px;display:flex;justify-content:space-between;
+                align-items:flex-end;flex-wrap:wrap;gap:20px;">
         <div style="display:flex;flex-direction:column;gap:15px;">
             <h3 style="margin:0;font-size:1.5rem;">Redes Sociales</h3>
-            <a href="https://www.facebook.com/share/1Dm3gCLuyo/" target="_blank" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:white;">
+            <a href="https://www.facebook.com/share/1Dm3gCLuyo/" target="_blank"
+               style="display:flex;align-items:center;gap:12px;text-decoration:none;color:white;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="35">
                 <span>José Miguel Ardila Rodriguez</span>
             </a>
-            <a href="https://www.instagram.com/jse_michael" target="_blank" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:white;">
+            <a href="https://www.instagram.com/jse_michael" target="_blank"
+               style="display:flex;align-items:center;gap:12px;text-decoration:none;color:white;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="35">
                 <span>jse_michael</span>
             </a>
         </div>
         <div style="display:flex;flex-direction:column;gap:15px;text-align:right;">
-            <a href="https://mail.google.com/mail/?view=cm&to=Josemz.00rz@gmail.com" target="_blank" style="display:flex;align-items:center;gap:12px;justify-content:flex-end;text-decoration:none;color:white;">
+            <a href="https://mail.google.com/mail/?view=cm&to=Josemz.00rz@gmail.com" target="_blank"
+               style="display:flex;align-items:center;gap:12px;justify-content:flex-end;text-decoration:none;color:white;">
                 <span>Josemz.00rz@gmail.com</span>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="35">
             </a>
@@ -234,7 +334,6 @@
             <p style="margin:10px 0 0;font-weight:bold;">Creador: José Miguel Ardila Rodriguez</p>
         </div>
     </div>
-
 </div>
 
 <script src="script.js"></script>
